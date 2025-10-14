@@ -7,6 +7,7 @@ const port = 3001
 const cors = require('cors')
 const axios = require('axios')
 const { spawn } = require('child_process')
+const os = require('node:os')
 app.use(express.json())
 
 app.use(cors());
@@ -78,7 +79,8 @@ app.post('/api/logout', (req, res) => {
 });
 
 app.get('/api/tickets', (req, res) => {
-  const filePath = path.join(__dirname, 'WHD_Tickets.tsv');
+  const user = os.homedir();
+  const filePath = path.join(user, 'Documents', 'WHD_Tickets.tsv');
 
   fs.readFile(filePath, 'utf16le', (err, data) => {
     if (err) {
@@ -107,7 +109,8 @@ app.get('/api/tickets', (req, res) => {
 });
 
 app.get('/api/surveys', (req, res) => {
-  const filePath = path.join(__dirname, 'surveys.txt');
+  const user = os.homedir(); 
+  const filePath = path.join(user, 'Documents', 'surveys.txt');
 
   fs.readFile(filePath, 'utf16le', (err, data) => {
     if (err) {

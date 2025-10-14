@@ -22,7 +22,7 @@ download_path = str(Path.home() / "Downloads" / "WHD_Tickets.tsv")
 download_path2 = str(Path.home() / "Downloads" / "surveys.txt")
 
 # El destino a donde se moverán los archivos para ser leídos en la página web
-destination = "C:\\Users\\pcita\\source\\repos\\Proyectograduacion\\expressNodeJS\\expressNodeJS"
+destination = str(Path.home() / "Documents")
 Path.unlink(download_path, missing_ok=True)
 Path.unlink(download_path2, missing_ok=True)
 
@@ -127,6 +127,7 @@ def main(user, passuser):
                 ejecucion(user, passuser)
             except Exception as e:
                 print(f"Error durante el inicio de script")
+                ejecucion(user, passuser)
     finally:
         driver.quit()
         print("Se detiene la ejecución del script")
