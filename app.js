@@ -137,31 +137,35 @@ app.get('/api/surveys', (req, res) => {
 
 app.get('/api/encargados', async (req, res) => {
   try {
-    const response = await axios.get('https://encargados-archivo-premium-sa.vercel.app/encargado.txt', { responseType: 'text' });
-    let data = response.data;
+    const filePath = path.join(__dirname, 'encargado.txt');
 
-    // Elimina caracteres nulos y espacios en blanco extra
-    const cleanedData = data.replace(/[\uFEFF\u200B\u00A0\u0000\u003C\u003E]/g, '').trim();
+    fs.readFile(filePath, 'utf16le', (err, data) => {
+      if (err) {
+        console.error('Error al leer el archivo:', err);
+        return res.status(500).json({ error: 'Error al leer el archivo' });
+      }
+      // Elimina caracteres nulos y espacios en blanco extra
+      const cleanedData = data.replace(/[\uFEFF\u200B\u00A0\u0000\u003C\u003E]/g, '').trim();
 
-    // Parsea el archivo eliminando comillas dobles
-    const parsedData = Papa.parse(cleanedData, {
-      header: true,        // Usa la primera fila como nombres de columna
-      delimiter: '\t',     // Asegura que el delimitador sea tabulador
-      skipEmptyLines: true,
-      transformHeader: header => header.replace(/"/g, '') // Elimina comillas de los encabezados
+      // Parsea el archivo eliminando comillas dobles
+      const parsedData = Papa.parse(cleanedData, {
+        header: true,        // Usa la primera fila como nombres de columna
+        delimiter: '\t',     // Asegura que el delimitador sea tabulador
+        skipEmptyLines: true,
+        transformHeader: header => header.replace(/"/g, '') // Elimina comillas de los encabezados
+      });
+
+      // Validación de datos
+      if (!parsedData || !parsedData.data || parsedData.data.length === 0) {
+        return res.status(400).json({ error: 'El archivo no contiene datos válidos' });
+      }
     });
-
-    // Validación de datos
-    if (!parsedData || !parsedData.data || parsedData.data.length === 0) {
-      return res.status(400).json({ error: 'El archivo no contiene datos válidos' });
-    }
-
     res.send(parsedData.data); // Enviar los datos parseados al frontend
   } catch (error) {
     res.status(500).send('No se pudo leer el archivo');
   }
 });
 
-app.listen(port, () =>{
-    console.log('El servidor está listo')
+app.listen(port, () => {
+  console.log('El servidor está listo')
 });
