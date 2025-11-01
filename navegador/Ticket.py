@@ -113,7 +113,7 @@ def ejecucion (user, passuser):
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//div[@class='listActionCellLabel' and contains(text(),'Download TSV')]"))).click()
     if check_stop(): return
 
-    time.sleep(250)
+    time.sleep(450)
     shutil.move(download_path, dest)
     time.sleep(5)
     shutil.move(download_path2, dest2)

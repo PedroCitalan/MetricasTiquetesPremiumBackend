@@ -7,7 +7,6 @@ const port = 3001
 const cors = require('cors')
 const axios = require('axios')
 const { spawn } = require('child_process')
-const os = require('node:os')
 app.use(express.json())
 
 app.use(cors());
@@ -30,7 +29,7 @@ function clearStopFlag() {
 }
 
 // Función para iniciar y reiniciar el script
-function startPythonScript(username, password) {
+/*function startPythonScript(username, password) {
   if (!keepRunning) return; // Si la sesión está cerrada, no ejecutamos el script
   clearStopFlag();
 
@@ -47,7 +46,7 @@ function startPythonScript(username, password) {
     console.log(`Ticket.py terminó con código ${code}`);
     if (keepRunning) setTimeout(() => startPythonScript(username, password), 7200000); // Espera 2h y reinicia
   });
-}
+}*/
 
 app.post('/api/solarwinds-login', async (req, res) => {
   const { username, password } = req.body;
@@ -59,7 +58,7 @@ app.post('/api/solarwinds-login', async (req, res) => {
     );
 
     keepRunning = true; // Habilita el ciclo de reinicio
-    startPythonScript(username, password); // Inicia la ejecución automática
+    // startPythonScript(username, password); // Inicia la ejecución automática
 
     res.json({ success: true, data: response.data });
   } catch (error) {
@@ -79,8 +78,7 @@ app.post('/api/logout', (req, res) => {
 });
 
 app.get('/api/tickets', (req, res) => {
-  const user = os.homedir();
-  const filePath = path.join(user, 'Documents', 'WHD_Tickets.tsv');
+  const filePath = path.join(__dirname, 'WHD_Tickets.tsv');
 
   fs.readFile(filePath, 'utf16le', (err, data) => {
     if (err) {
@@ -109,8 +107,7 @@ app.get('/api/tickets', (req, res) => {
 });
 
 app.get('/api/surveys', (req, res) => {
-  const user = os.homedir(); 
-  const filePath = path.join(user, 'Documents', 'surveys.txt');
+  const filePath = path.join(__dirname, 'surveys.txt');
 
   fs.readFile(filePath, 'utf16le', (err, data) => {
     if (err) {
