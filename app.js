@@ -135,7 +135,7 @@ app.get('/api/surveys', (req, res) => {
   });
 });
 
-app.get('/api/encargados', (req, res) => {
+/*app.get('/api/encargados', (req, res) => {
   const filePath = path.join(__dirname, 'encargado.txt');
 
   fs.readFile(filePath, 'utf8', (err, data) => {
@@ -162,7 +162,7 @@ app.get('/api/encargados', (req, res) => {
 
     res.json(parsedData.data); // Enviar los datos parseados al frontend
   });
-});
+});*/
 
 app.listen(port, () =>{
     console.log('El servidor está listo')
