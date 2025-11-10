@@ -22,7 +22,7 @@ download_path = str(Path.home() / "Downloads" / "WHD_Tickets.tsv")
 download_path2 = str(Path.home() / "Downloads" / "surveys.txt")
 
 # El destino a donde se moverán los archivos para ser leídos en la página web
-destination = str(Path.home() / "Documents")
+destination = os.path.join(os.path.realpath(sys.argv[0], '..'))
 Path.unlink(download_path, missing_ok=True)
 Path.unlink(download_path2, missing_ok=True)
 

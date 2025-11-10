@@ -54,7 +54,7 @@ app.post('/api/solarwinds-login', async (req, res) => {
   try {
     const response = await axios.get(
       `https://whdca.premium.sv/helpdesk/WebObjects/Helpdesk.woa/ra/Tickets/group/?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
-      { httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false }) }
+      { httpsAgent: new (require('https').Agent)({ rejectUnauthorized: true }) }
     );
 
     keepRunning = true; // Habilita el ciclo de reinicio
@@ -106,7 +106,7 @@ app.get('/api/tickets', (req, res) => {
   });
 });
 
-app.get('/api/surveys', (req, res) => {
+/*app.get('/api/surveys', (req, res) => {
   const filePath = path.join(__dirname, 'surveys.txt');
 
   fs.readFile(filePath, 'utf16le', (err, data) => {
@@ -133,7 +133,7 @@ app.get('/api/surveys', (req, res) => {
 
     res.json(parsedData.data); // Enviar los datos parseados al frontend
   });
-});
+});*/
 
 app.get('/api/encargados', (req, res) => {
   const filePath = path.join(__dirname, 'encargado.txt');
