@@ -7,6 +7,7 @@ const port = 3001
 const cors = require('cors')
 const axios = require('axios')
 const { spawn } = require('child_process')
+const jwt = require('jsonwebtoken')
 app.use(express.json())
 
 app.use(cors());
@@ -51,19 +52,33 @@ function clearStopFlag() {
 app.post('/api/solarwinds-login', async (req, res) => {
   const { username, password } = req.body;
 
+  if (!username || !password) {
+    return res.status(400).json({ success: false, message: 'Usuario y contraseña requeridos' })
+  }
+
   try {
     const response = await axios.get(
       `https://whdca.premium.sv/helpdesk/WebObjects/Helpdesk.woa/ra/Tickets/group/?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
       { httpsAgent: new (require('https').Agent)({ rejectUnauthorized: true }) }
     );
 
-    keepRunning = true; // Habilita el ciclo de reinicio
-    // startPythonScript(username, password); // Inicia la ejecución automática
+    // Considerar respuesta 200 como credenciales válidas
+    if (response && response.status === 200) {
+      const secret = process.env.JWT_SECRET || 'change_me_in_env';
+      const token = jwt.sign({ sub: username, iss: 'metricas-premium', type: 'login' }, secret, { expiresIn: '8h' });
+      const role = 'user';
 
-    res.json({ success: true, data: response.data });
+      keepRunning = true; // Habilita el ciclo de reinicio si aplica
+      // startPythonScript(username, password);
+
+      return res.json({ success: true, token, role });
+    }
+
+    return res.status(401).json({ success: false, message: 'Credenciales inválidas' });
   } catch (error) {
-    console.error('Error en autenticación:', error.response?.status, error.response?.data);
-    res.status(401).json({ success: false, message: 'Autenticación fallida' });
+    const status = error?.response?.status;
+    console.error('Error en autenticación:', status, error.response?.data || error.message);
+    return res.status(401).json({ success: false, message: 'Autenticación fallida' });
   }
 });
 
