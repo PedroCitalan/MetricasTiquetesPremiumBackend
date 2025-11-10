@@ -7,7 +7,6 @@ const port = 3001
 const cors = require('cors')
 const axios = require('axios')
 const { spawn } = require('child_process')
-const jwt = require('jsonwebtoken')
 app.use(express.json())
 
 app.use(cors());
@@ -52,40 +51,19 @@ function clearStopFlag() {
 app.post('/api/solarwinds-login', async (req, res) => {
   const { username, password } = req.body;
 
-  if (!username || !password) {
-    return res.status(400).json({ success: false, message: 'Usuario y contraseña requeridos' })
-  }
-
   try {
-    const url = `https://whdca.premium.sv/helpdesk/WebObjects/Helpdesk.woa/ra/Tickets/group/?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
-    const response = await axios.get(url, {
-      httpsAgent: new (require('https').Agent)({ rejectUnauthorized: true }),
-      headers: { Accept: 'application/json' },
-      // No lanzar excepción: queremos leer y reportar el status exacto
-      validateStatus: () => true,
-    });
+    const response = await axios.get(
+      `https://whdca.premium.sv/helpdesk/WebObjects/Helpdesk.woa/ra/Tickets/group/?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
+      { httpsAgent: new (require('https').Agent)({ rejectUnauthorized: true }) }
+    );
 
-    const status = response.status;
-    const contentType = String(response.headers?.['content-type'] || '');
-    const isJson = contentType.includes('application/json');
-    const data = response.data;
+    keepRunning = true; // Habilita el ciclo de reinicio
+    // startPythonScript(username, password); // Inicia la ejecución automática
 
-    if (status === 200 && isJson && data != null) {
-      const secret = process.env.JWT_SECRET || 'change_me_in_env';
-      const token = jwt.sign({ sub: username, iss: 'metricas-premium', type: 'login' }, secret, { expiresIn: '8h' });
-      const role = 'user';
-
-      keepRunning = true;
-      // startPythonScript(username, password);
-
-      return res.json({ success: true, status, token, role });
-    }
-
-    return res.status(401).json({ success: false, status, message: 'Autenticación fallida' });
+    res.json({ success: true, data: response.data });
   } catch (error) {
-    const status = error?.response?.status;
-    console.error('Error en autenticación:', status, error.response?.data || error.message);
-    return res.status(401).json({ success: false, message: 'Autenticación fallida' });
+    console.error('Error en autenticación:', error.response?.status, error.response?.data);
+    res.status(401).json({ success: false, message: 'Autenticación fallida' });
   }
 });
 
