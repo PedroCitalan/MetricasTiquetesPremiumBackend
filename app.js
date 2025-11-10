@@ -61,28 +61,27 @@ app.post('/api/solarwinds-login', async (req, res) => {
     const response = await axios.get(url, {
       httpsAgent: new (require('https').Agent)({ rejectUnauthorized: true }),
       headers: { Accept: 'application/json' },
-      // Solo aceptar 200; 401/403 se irán al catch
-      validateStatus: (status) => status === 200,
+      // No lanzar excepción: queremos leer y reportar el status exacto
+      validateStatus: () => true,
     });
 
-    const contentType = String(response.headers['content-type'] || '');
-    if (!contentType.includes('application/json')) {
-      return res.status(401).json({ success: false, message: 'Autenticación fallida' });
-    }
-
+    const status = response.status;
+    const contentType = String(response.headers?.['content-type'] || '');
+    const isJson = contentType.includes('application/json');
     const data = response.data;
-    if (data == null) {
-      return res.status(401).json({ success: false, message: 'Autenticación fallida' });
+
+    if (status === 200 && isJson && data != null) {
+      const secret = process.env.JWT_SECRET || 'change_me_in_env';
+      const token = jwt.sign({ sub: username, iss: 'metricas-premium', type: 'login' }, secret, { expiresIn: '8h' });
+      const role = 'user';
+
+      keepRunning = true;
+      // startPythonScript(username, password);
+
+      return res.json({ success: true, status, token, role });
     }
 
-    const secret = process.env.JWT_SECRET || 'change_me_in_env';
-    const token = jwt.sign({ sub: username, iss: 'metricas-premium', type: 'login' }, secret, { expiresIn: '8h' });
-    const role = 'user';
-
-    keepRunning = true;
-    // startPythonScript(username, password);
-
-    return res.json({ success: true, token, role });
+    return res.status(401).json({ success: false, status, message: 'Autenticación fallida' });
   } catch (error) {
     const status = error?.response?.status;
     console.error('Error en autenticación:', status, error.response?.data || error.message);
