@@ -53,7 +53,7 @@ app.post('/api/solarwinds-login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const corsAnywhere = 'https://cors-anywhere.herokuapp.com/';
+    const corsAnywhere = 'https://cors-anywhere.com/';
     const targetUrl = `https://whdca.premium.sv/helpdesk/WebObjects/Helpdesk.woa/ra/Tickets/group/?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
     const proxiedUrl = `${corsAnywhere}${targetUrl}`;
 
