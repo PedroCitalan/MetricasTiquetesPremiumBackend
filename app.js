@@ -57,16 +57,13 @@ app.post('/api/solarwinds-login', async (req, res) => {
   }
 
   try {
-    const response = await axios.get(
-      'https://whdca.premium.sv/helpdesk/WebObjects/Helpdesk.woa/ra/Tickets/group/',
-      {
-        httpsAgent: new (require('https').Agent)({ rejectUnauthorized: true }),
-        headers: { Accept: 'application/json' },
-        auth: { username, password },
-        // Solo aceptar 200; 401/403 se irán al catch
-        validateStatus: (status) => status === 200,
-      }
-    );
+    const url = `https://whdca.premium.sv/helpdesk/WebObjects/Helpdesk.woa/ra/Tickets/group/?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+    const response = await axios.get(url, {
+      httpsAgent: new (require('https').Agent)({ rejectUnauthorized: true }),
+      headers: { Accept: 'application/json' },
+      // Solo aceptar 200; 401/403 se irán al catch
+      validateStatus: (status) => status === 200,
+    });
 
     const contentType = String(response.headers['content-type'] || '');
     if (!contentType.includes('application/json')) {
@@ -74,7 +71,7 @@ app.post('/api/solarwinds-login', async (req, res) => {
     }
 
     const data = response.data;
-    if (data == null || (typeof data !== 'object' && !Array.isArray(data))) {
+    if (data == null) {
       return res.status(401).json({ success: false, message: 'Autenticación fallida' });
     }
 
