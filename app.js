@@ -58,23 +58,34 @@ app.post('/api/solarwinds-login', async (req, res) => {
 
   try {
     const response = await axios.get(
-      `https://whdca.premium.sv/helpdesk/WebObjects/Helpdesk.woa/ra/Tickets/group/?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
-      { httpsAgent: new (require('https').Agent)({ rejectUnauthorized: true }) }
+      'https://whdca.premium.sv/helpdesk/WebObjects/Helpdesk.woa/ra/Tickets/group/',
+      {
+        httpsAgent: new (require('https').Agent)({ rejectUnauthorized: true }),
+        headers: { Accept: 'application/json' },
+        auth: { username, password },
+        // Solo aceptar 200; 401/403 se irán al catch
+        validateStatus: (status) => status === 200,
+      }
     );
 
-    // Considerar respuesta 200 como credenciales válidas
-    if (response && response.status === 200) {
-      const secret = process.env.JWT_SECRET || 'change_me_in_env';
-      const token = jwt.sign({ sub: username, iss: 'metricas-premium', type: 'login' }, secret, { expiresIn: '8h' });
-      const role = 'user';
-
-      keepRunning = true; // Habilita el ciclo de reinicio si aplica
-      // startPythonScript(username, password);
-
-      return res.json({ success: true, token, role });
+    const contentType = String(response.headers['content-type'] || '');
+    if (!contentType.includes('application/json')) {
+      return res.status(401).json({ success: false, message: 'Autenticación fallida' });
     }
 
-    return res.status(401).json({ success: false, message: 'Credenciales inválidas' });
+    const data = response.data;
+    if (data == null || (typeof data !== 'object' && !Array.isArray(data))) {
+      return res.status(401).json({ success: false, message: 'Autenticación fallida' });
+    }
+
+    const secret = process.env.JWT_SECRET || 'change_me_in_env';
+    const token = jwt.sign({ sub: username, iss: 'metricas-premium', type: 'login' }, secret, { expiresIn: '8h' });
+    const role = 'user';
+
+    keepRunning = true;
+    // startPythonScript(username, password);
+
+    return res.json({ success: true, token, role });
   } catch (error) {
     const status = error?.response?.status;
     console.error('Error en autenticación:', status, error.response?.data || error.message);
