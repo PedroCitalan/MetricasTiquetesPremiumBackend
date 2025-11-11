@@ -12,7 +12,7 @@ import shutil
 
 # Configurar WebDriver con WebDriver Manager
 options = webdriver.EdgeOptions()
-options.add_argument("--headless") # Hace la descarga de archivos de tiquetes de la página sin mostrar el navegador
+options.add_argument("--headless") # Hace el proceso de descarga sin que el usuario pueda verlo
 driver = webdriver.Edge(service=EdgeService(), options=options)
 
 # Directorio donde se descargan los tickets
@@ -22,7 +22,9 @@ download_path = str(Path.home() / "Downloads" / "WHD_Tickets.tsv")
 download_path2 = str(Path.home() / "Downloads" / "surveys.txt")
 
 # El destino a donde se moverán los archivos para ser leídos en la página web
-destination = os.path.join(os.path.realpath(sys.argv[0], '..'))
+p = os.getcwd()
+destination_up = os.path.join(p, "..")
+destination = os.path.abspath(destination_up)
 Path.unlink(download_path, missing_ok=True)
 Path.unlink(download_path2, missing_ok=True)
 
