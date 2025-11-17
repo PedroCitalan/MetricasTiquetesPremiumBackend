@@ -5,6 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from pathlib import Path
+from git import Repo
 import time
 import sys
 import os
@@ -14,6 +15,10 @@ import shutil
 options = webdriver.EdgeOptions()
 options.add_argument("--headless") # Hace el proceso de descarga sin que el usuario pueda verlo
 driver = webdriver.Edge(service=EdgeService(), options=options)
+
+# Repositorio donde se envían los archivos para la nube
+path_git_repo = r'C:\\Users\\pcita\\source\\repos\\Proyectograduacion\\expressNodeJS\\MetricasTiquetesPremiumBackend\\.git'
+commit_message = "Actualización de archivos de encargados"
 
 # Directorio donde se descargan los tickets
 download_path = str(Path.home() / "Downloads" / "WHD_Tickets.tsv")
@@ -35,6 +40,17 @@ dest = os.path.join(destination, filename)
 # Argumentos para mover las encuestas al directorio de la página web
 filename2 = os.path.basename(download_path2)
 dest2 = os.path.join(destination, filename2)
+
+# Ejecución de la subida de archivos
+def git_push():
+    try:
+        repo = Repo(path_git_repo)
+        repo.git.add(update=True)
+        repo.index.commit(commit_message)
+        origin = repo.remote(name='origin')
+        origin.push
+    except:
+        print('Error en la subida de archivos')
 
 # Si se encuentra el archivo stop.txt, se envía la señal para detener el script
 def check_stop():
@@ -119,6 +135,7 @@ def ejecucion (user, passuser):
     shutil.move(download_path, dest)
     time.sleep(5)
     shutil.move(download_path2, dest2)
+    git_push()
     quit()
 
 # Ciclo para ejecutar el script
