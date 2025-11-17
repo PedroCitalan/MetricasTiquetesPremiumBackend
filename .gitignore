@@ -11,6 +11,9 @@
 # production
 /build
 
+#Python
+/navegador
+
 # misc
 .DS_Store
 .env.local
@@ -18,7 +21,6 @@
 .env.test.local
 .env.production.local
 surveys.txt
-Ticket.py
 
 npm-debug.log*
 yarn-debug.log*
